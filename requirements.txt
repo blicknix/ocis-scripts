@@ -1,0 +1,3 @@
+requests>=2.31.0
+webdavclient3>=3.14.6
+msgpack>=1.0.5

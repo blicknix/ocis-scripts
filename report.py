@@ -46,8 +46,8 @@ def analyze_drives(drives):
     stats = {
         "personal": 0,
         "spaces": 0,
-        "personal_deleted": 0,
-        "spaces_deleted": 0,
+        "personal_disabled": 0,
+        "spaces_disabled": 0,
         "user_space": 0,
         "quota_normal": 0,
         "quota_nearing": 0,
@@ -58,13 +58,13 @@ def analyze_drives(drives):
     for drive in drives:
         if drive['driveType'] == "project":
             if "deleted" in drive['root']:
-                stats["spaces_deleted"] += 1
+                stats["spaces_disabled"] += 1
             else:
                 stats["spaces"] += 1
 
         elif drive['driveType'] == "personal":
             if "deleted" in drive['root']:
-                stats["personal_deleted"] += 1
+                stats["personal_disabled"] += 1
             else:
                 stats["personal"] += 1
 
@@ -91,8 +91,8 @@ def print_report(stats):
     print("=======")
     print("Spaces            Anzahl(Gelöscht)")
     print("-------")
-    print(f"Personal Spaces:  {stats['personal']} ({stats['personal_deleted']})")
-    print(f"Shared Spaces:    {stats['spaces']} ({stats['spaces_deleted']})")
+    print(f"Personal Spaces:  {stats['personal']} ({stats['personal_disabled']})")
+    print(f"Shared Spaces:    {stats['spaces']} ({stats['spaces_disabled']})")
     print("\n---")
     print(f"Used Space:       {round(stats['user_space'], 2)} GB")
     print("Quota Status:")

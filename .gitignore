@@ -209,3 +209,8 @@ __marimo__/
 # Configuration
 env.py
 debug.json
+
+# Testfiles
+backup/
+debug.json
+output/
