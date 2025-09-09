@@ -2,11 +2,14 @@ import os
 import shutil
 import msgpack
 import requests
+from base64 import b64encode
 from datetime import datetime
 #from webdav3.client import Client
 
 import env
 
+#Global envs
+auth_mode = ''
 
 # ------------------- HELPERS ---------------- #
 
@@ -16,16 +19,34 @@ def get_user_id():
 
 # ------------------- AUTH ------------------- #
 def get_bearer_token():
-    """Prompt the user for a Bearer token. Needs to be Admin Role."""
+    """Prompt the user for a Bearer token. Needs to be Admin Role"""
     return input("Enter your Bearer token: ").strip()
 
 
 def build_headers(token):
-    """Build request headers with the Bearer token."""
-    return {
-        "accept": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
+    """Build request headers with a token."""
+    global auth_mode
+    if hasattr(env, 'OCIS_USER') and hasattr(env, 'OCIS_USER_TOKEN'):
+        # Use as username/password
+        auth_mode = "basic"
+        print(f"Using USER/PASSWORD authentication with user: {env.OCIS_USER}")
+        app_token = b64encode(f"{env.OCIS_USER}:{env.OCIS_USER_TOKEN}".encode('utf-8')).decode("ascii")
+
+        return {
+            'accept': 'application/json',
+            'Authorization': f'Basic {app_token}'
+        }
+    else:
+        # Ask for Bearer token
+        auth_mode = "bearer"
+        if token is None:
+            token = get_bearer_token()
+        print("Using Bearer token authentication.")
+        
+        return {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
 
 
 # ------------------- PATH HELPERS ------------------- #
@@ -156,9 +177,7 @@ def build_directory_tree_and_restore_files(nodes, space_id, output_dir="output")
 def restore_user_drive(user_id=None, token=None):
     user_id = token or get_user_id()
     
-    token = token or get_bearer_token()
     headers = build_headers(token)
-
 
     # Get user + drive info
     url = f"{env.OCIS_URL}graph/v1.0/users/{user_id}?%24expand=drive"

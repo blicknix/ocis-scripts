@@ -2,6 +2,10 @@
 import requests
 import math
 import env
+from base64 import b64encode
+
+#Global envs
+auth_mode = ''
 
 
 def get_bearer_token():
@@ -10,11 +14,29 @@ def get_bearer_token():
 
 
 def build_headers(token):
-    """Build request headers with the Bearer token."""
-    return {
-        'accept': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
+    """Build request headers with a token."""
+    global auth_mode
+    if hasattr(env, 'OCIS_USER') and hasattr(env, 'OCIS_USER_TOKEN'):
+        # Use as username/password
+        auth_mode = "basic"
+        print(f"Using USER/PASSWORD authentication with user: {env.OCIS_USER}")
+        app_token = b64encode(f"{env.OCIS_USER}:{env.OCIS_USER_TOKEN}".encode('utf-8')).decode("ascii")
+
+        return {
+            'accept': 'application/json',
+            'Authorization': f'Basic {app_token}'
+        }
+    else:
+        # Ask for Bearer token
+        auth_mode = "bearer"
+        if token is None:
+            token = get_bearer_token()
+        print("Using Bearer token authentication.")
+        
+        return {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
 
 
 def validate_token(headers):
@@ -104,13 +126,11 @@ def print_report(stats):
 
 
 def main(token=None):
-    if token is None:
-        token = get_bearer_token()
     headers = build_headers(token)
 
     print("\nValidating token...")
     if not validate_token(headers):
-        print("Invalid Bearer token. Please check and try again.")
+        print("Invalid Auth. Please check and try again.")
         return
 
     try:
