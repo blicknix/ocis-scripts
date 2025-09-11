@@ -186,6 +186,7 @@ def restore_user_drive(user_id=None, token=None):
     user_data = resp.json()
 
     space_id = user_data["drive"]["id"].split("$")[1]
+    print('SpaceID from user: ' + space_id)
     space_name = f"Restore {user_data['displayName']} {datetime.today().strftime('%Y-%m-%d')}"
     space_description = f"Restore der Daten von {user_data['displayName']} am {datetime.today().strftime('%Y-%m-%d')}"
 
