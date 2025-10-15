@@ -71,6 +71,8 @@ def analyze_drives(drives):
         "personal_disabled": 0,
         "spaces_disabled": 0,
         "user_space": 0,
+        "user_space_personal": 0,
+        "user_space_shared": 0,
         "quota_normal": 0,
         "quota_nearing": 0,
         "quota_critical": 0,
@@ -92,6 +94,12 @@ def analyze_drives(drives):
 
         if "quota" in drive and "deleted" not in drive["root"]:
             stats["user_space"] += drive["quota"]["used"]
+            if drive['driveType'] == "project":
+                stats["user_space_shared"] += drive["quota"]["used"]
+            elif drive['driveType'] == "personal":
+                stats["user_space_personal"] += drive["quota"]["used"]
+
+        elif drive['driveType'] == "personal":
 
             state = drive["quota"].get("state", "normal")
             if state == "exceeded":
@@ -104,6 +112,8 @@ def analyze_drives(drives):
                 stats["quota_normal"] += 1
 
     stats["user_space"] = stats["user_space"] / 1024 / 1024 / 1024  # Convert to GB
+    stats["user_space_shared"] = stats["user_space_shared"] / 1024 / 1024 / 1024  # Convert to GB
+    stats["user_space_personal"] = stats["user_space_personal"] / 1024 / 1024 / 1024  # Convert to GB
     return stats
 
 
@@ -113,15 +123,17 @@ def print_report(stats):
     print("=======")
     print("Spaces            Anzahl(Gelöscht)")
     print("-------")
-    print(f"Personal Spaces:  {stats['personal']} ({stats['personal_disabled']})")
-    print(f"Shared Spaces:    {stats['spaces']} ({stats['spaces_disabled']})")
+    print(f"Personal Spaces:     {stats['personal']} ({stats['personal_disabled']})")
+    print(f"Shared Spaces:       {stats['spaces']} ({stats['spaces_disabled']})")
     print("\n---")
-    print(f"Used Space:       {round(stats['user_space'], 2)} GB")
+    print(f"Used Space:          {round(stats['user_space'], 2)} GB")
+    print(f"Used personal Space: {round(stats['user_space_personal'], 2)} GB")
+    print(f"Used project Space:  {round(stats['user_space_shared'], 2)} GB")
     print("Quota Status:")
-    print(f"<75%:             {stats['quota_normal']}")
-    print(f"75%-89%:          {stats['quota_nearing']}")
-    print(f"90%-99%:          {stats['quota_critical']}")
-    print(f"100%:             {stats['quota_exceeded']}")
+    print(f"<75%:                {stats['quota_normal']}")
+    print(f"75%-89%:             {stats['quota_nearing']}")
+    print(f"90%-99%:             {stats['quota_critical']}")
+    print(f"100%:                {stats['quota_exceeded']}")
     print("")
 
 
